@@ -13,17 +13,17 @@ BOOL VoteSubmissionEnabled() {
 }
 
 BOOL ExactLikeNumber() {
-     if (![[NSUserDefaults standardUserDefaults] objectForKey:EnabledKey]) {
+     if (![[NSUserDefaults standardUserDefaults] objectForKey:ExactLikeKey]) {
         // Nếu không có giá trị, đặt giá trị mặc định là YES
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:EnabledKey];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:ExactLikeKey];
     }
     return [[NSUserDefaults standardUserDefaults] boolForKey:ExactLikeKey];
 }
 
 BOOL ExactDislikeNumber() {
-     if (![[NSUserDefaults standardUserDefaults] objectForKey:EnabledKey]) {
+     if (![[NSUserDefaults standardUserDefaults] objectForKey:ExactDislikeKey]) {
         // Nếu không có giá trị, đặt giá trị mặc định là YES
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:EnabledKey];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:ExactDislikeKey];
     }
     return [[NSUserDefaults standardUserDefaults] boolForKey:ExactDislikeKey];
 }
