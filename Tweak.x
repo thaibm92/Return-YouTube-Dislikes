@@ -438,7 +438,7 @@ extern NSBundle *RYDBundle();
 // %end
 
 // %end
-
+/*
 %ctor {
     cache = [NSCache new];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -468,4 +468,4 @@ extern NSBundle *RYDBundle();
     // if (!IS_IOS_OR_NEWER(iOS_13_0)) {
     //     %init(ForceLegacy);
     // }
-}
+}*/
