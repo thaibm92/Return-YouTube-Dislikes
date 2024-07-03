@@ -27,8 +27,8 @@ BOOL ExactDislikeNumber() {
     }
     return [[NSUserDefaults standardUserDefaults] boolForKey:ExactDislikeKey];
 }
-/*
+
 void enableVoteSubmission(BOOL enabled) {
     [[NSUserDefaults standardUserDefaults] setBool:enabled forKey:EnableVoteSubmissionKey];
 }
-*/
+
