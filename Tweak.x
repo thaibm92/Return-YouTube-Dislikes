@@ -440,9 +440,9 @@ extern NSBundle *RYDBundle();
 // %end
 
 %ctor {
-    cache = [NSCache new];
+    /*cache = [NSCache new];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    /*if (![defaults boolForKey:DidShowEnableVoteSubmissionAlertKey] && !VoteSubmissionEnabled()) {
+    if (![defaults boolForKey:DidShowEnableVoteSubmissionAlertKey] && !VoteSubmissionEnabled()) {
         [defaults setBool:YES forKey:DidShowEnableVoteSubmissionAlertKey];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             NSBundle *tweakBundle = RYDBundle();
