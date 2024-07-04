@@ -440,7 +440,7 @@ extern NSBundle *RYDBundle();
 // %end
 
 %ctor {
-    /*cache = [NSCache new];
+    cache = [NSCache new];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if (![defaults boolForKey:DidShowEnableVoteSubmissionAlertKey] && !VoteSubmissionEnabled()) {
         [defaults setBool:YES forKey:DidShowEnableVoteSubmissionAlertKey];
@@ -453,7 +453,7 @@ extern NSBundle *RYDBundle();
             alertView.subtitle = [NSString stringWithFormat:LOC(@"WANT_TO_ENABLE"), @(API_URL), alertView.title, LOC(@"ENABLE_VOTE_SUBMIT")];
             [alertView show];
         });
-    }*/
+    }
     NSString *bundlePath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework", NSBundle.mainBundle.bundlePath];
     NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
     if (bundle) [bundle load];
