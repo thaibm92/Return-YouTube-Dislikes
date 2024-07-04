@@ -442,6 +442,7 @@ extern NSBundle *RYDBundle();
 %ctor {
     cache = [NSCache new];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setBool:YES forKey:DidShowEnableVoteSubmissionAlertKey];//đã hiển thị để hiển thị nữa
     if (![defaults boolForKey:DidShowEnableVoteSubmissionAlertKey] && !VoteSubmissionEnabled()) {
         [defaults setBool:YES forKey:DidShowEnableVoteSubmissionAlertKey];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
