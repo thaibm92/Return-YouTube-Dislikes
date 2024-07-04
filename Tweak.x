@@ -438,11 +438,11 @@ extern NSBundle *RYDBundle();
 // %end
 
 // %end
-/*
+
 %ctor {
     cache = [NSCache new];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if (![defaults boolForKey:DidShowEnableVoteSubmissionAlertKey] && !VoteSubmissionEnabled()) {
+    /*if (![defaults boolForKey:DidShowEnableVoteSubmissionAlertKey] && !VoteSubmissionEnabled()) {
         [defaults setBool:YES forKey:DidShowEnableVoteSubmissionAlertKey];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             NSBundle *tweakBundle = RYDBundle();
@@ -453,7 +453,7 @@ extern NSBundle *RYDBundle();
             alertView.subtitle = [NSString stringWithFormat:LOC(@"WANT_TO_ENABLE"), @(API_URL), alertView.title, LOC(@"ENABLE_VOTE_SUBMIT")];
             [alertView show];
         });
-    }
+    }*/
     NSString *bundlePath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework", NSBundle.mainBundle.bundlePath];
     NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
     if (bundle) [bundle load];
@@ -468,4 +468,4 @@ extern NSBundle *RYDBundle();
     // if (!IS_IOS_OR_NEWER(iOS_13_0)) {
     //     %init(ForceLegacy);
     // }
-}*/
+}
