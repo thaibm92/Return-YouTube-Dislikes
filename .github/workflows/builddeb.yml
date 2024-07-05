@@ -42,8 +42,8 @@ jobs:
           export THEOS=theos
           gmake clean package FINALPACKAGE=1
           PACKAGE_VERSION=$(grep '^PACKAGE_VERSION' Makefile | cut -d' ' -f3)
-          echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
-          echo "==> Built v$PACKAGE_VERSION!"
+          echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+          echo "==> Built v$PACKAGE_VERSION Successfully."
           
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v4
