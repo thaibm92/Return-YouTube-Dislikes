@@ -41,8 +41,10 @@ jobs:
           brew install make xz ldid 
           export THEOS=theos
           gmake clean package FINALPACKAGE=1
-          echo "PACKAGE_VERSION=$(grep '^PACKAGE_VERSION' Makefile | cut -d' ' -f3)" >> $GITHUB_ENV
-
+          PACKAGE_VERSION=$(grep '^PACKAGE_VERSION' Makefile | cut -d' ' -f3)
+          echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
+          echo "==> Built v$PACKAGE_VERSION!"
+          
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v4
         with:
