@@ -495,6 +495,7 @@ static void getVoteAndModifyButtons(
 %ctor {
     cache = [NSCache new];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setBool:YES forKey:DidShowEnableVoteSubmissionAlertKey];//đánh dấu rằng đã hiển thị họp thoại
     if (![defaults boolForKey:DidShowEnableVoteSubmissionAlertKey] && !VoteSubmissionEnabled()) {
         [defaults setBool:YES forKey:DidShowEnableVoteSubmissionAlertKey];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -503,7 +504,7 @@ static void getVoteAndModifyButtons(
                 enableVoteSubmission(YES);
             } actionTitle:_LOC([NSBundle mainBundle], @"settings.yes")];
             alertView.title = @(TWEAK_NAME);
-            //alertView.subtitle = [NSString stringWithFormat:LOC(@"WANT_TO_ENABLE"), @(API_URL), alertView.title, LOC(@"ENABLE_VOTE_SUBMIT")];
+            alertView.subtitle = [NSString stringWithFormat:LOC(@"WANT_TO_ENABLE"), @(API_URL), alertView.title, LOC(@"ENABLE_VOTE_SUBMIT")];
             [alertView show];
         });
     }
