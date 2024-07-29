@@ -503,7 +503,7 @@ static void getVoteAndModifyButtons(
                 enableVoteSubmission(YES);
             } actionTitle:_LOC([NSBundle mainBundle], @"settings.yes")];
             alertView.title = @(TWEAK_NAME);
-            alertView.subtitle = [NSString stringWithFormat:LOC(@"WANT_TO_ENABLE"), @(API_URL), alertView.title, LOC(@"ENABLE_VOTE_SUBMIT")];
+            //alertView.subtitle = [NSString stringWithFormat:LOC(@"WANT_TO_ENABLE"), @(API_URL), alertView.title, LOC(@"ENABLE_VOTE_SUBMIT")];
             [alertView show];
         });
     }
