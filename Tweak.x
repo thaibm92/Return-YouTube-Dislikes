@@ -213,7 +213,7 @@ static NSString *getVideoId(ASDisplayNode *containerNode) {
     } @catch (id ex) {
         pvc = [wc valueForKey:@"_playerViewController"];
     }
-    return [pvc currentVideoID];
+    return [pvc contentVideoID];
 }
 
 static void getVoteAndModifyButtons(
@@ -392,8 +392,14 @@ static void getVoteAndModifyButtons(
     %orig;
     if (!TweakEnabled()) return;
     if (self.didGetVote) return;
-    YTShortsPlayerViewController *spvc = [self parentResponder];
-    NSString *videoId = [spvc videoId];
+    id spvc = [self parentResponder];
+    NSString *videoId = nil;
+    if ([spvc isKindOfClass:%c(YTShortsPlayerViewController)])
+        videoId = [(YTShortsPlayerViewController *)spvc videoId];
+    else if ([spvc isKindOfClass:%c(YTReelPlayerViewController)]) {
+        YTReelModel *model = [spvc valueForKey:@"_model"];
+        videoId = model.onesieVideoID;
+    }
     HBLogDebug(@"RYD: Short ID: %@", videoId);
     if (videoId == nil) return;
     YTELMView *elmView = nil;
@@ -425,7 +431,7 @@ static void getVoteAndModifyButtons(
     ELMTextNode *shortLikeTextNode = likeNode.yogaChildren[1];
     ELMTextNode *shortDislikeTextNode = dislikeNode.yogaChildren[1];
     if (![shortLikeTextNode isKindOfClass:%c(ELMTextNode)] || ![shortDislikeTextNode isKindOfClass:%c(ELMTextNode)]) {
-        HBLogDebug(@"RYD: Short like or dislike text node not found");
+        HBLogDebug(@"%@", @"RYD: Short like or dislike text node not found");
         return;
     }
     __block NSMutableAttributedString *shortMutableDislikeText = [[NSMutableAttributedString alloc] initWithAttributedString:shortLikeTextNode.attributedText];
