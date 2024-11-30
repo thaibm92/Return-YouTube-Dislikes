@@ -8,9 +8,6 @@
 
 static NSCache <NSString *, NSDictionary *> *cache;
 
-void (*ASNodeContextPush)(ASNodeContext *);
-void (*ASNodeContextPop)(void);
-
 extern NSBundle *RYDBundle();
 
 %hook YTSlimVideoDetailsActionView
@@ -187,7 +184,7 @@ extern NSBundle *RYDBundle();
 
 int overrideNodeCreation = 0;
 
-static BOOL isVideoScrollabelActionBar(ASCollectionView *collectionView) {
+static BOOL isVideoScrollableActionBar(ASCollectionView *collectionView) {
     return [collectionView.accessibilityIdentifier isEqualToString:@"id.video.scrollable_action_bar"];
 }
 
@@ -247,7 +244,7 @@ static void getVoteAndModifyButtons(
 
 - (ELMCellNode *)nodeForItemAtIndexPath:(NSIndexPath *)indexPath {
     ELMCellNode *node = %orig;
-    if (isVideoScrollabelActionBar(self) && TweakEnabled()) {
+    if (isVideoScrollableActionBar(self) && TweakEnabled()) {
         _ASCollectionViewCell *likeDislikeCell = [self.subviews firstObject];
         ASDisplayNode *containerNode = [likeDislikeCell node];
         NSString *videoId = getVideoId(containerNode);
@@ -274,16 +271,9 @@ static void getVoteAndModifyButtons(
                     dislikeRollingNumberNode = dislikeNode.yogaChildren[1];
                 else {
                     id elementContext = [likeRollingNumberNode valueForKey:@"_context"];
-                    if (ASNodeContextPush) {
-                        ASNodeContext *context = [(ASNodeContext *)[%c(ASNodeContext) alloc] initWithOptions:1];
-                        ASNodeContextPush(context);
-                        dislikeRollingNumberNode = [[%c(YTRollingNumberNode) alloc] initWithElement:likeRollingNumberNode.element context:elementContext];
-                        ASNodeContextPop();
-                    } else {
-                        overrideNodeCreation = 1;
-                        dislikeRollingNumberNode = [[%c(ELMNodeFactory) sharedInstance] nodeWithElement:likeRollingNumberNode.element materializationContext:&elementContext];
-                        overrideNodeCreation = 0;
-                    }
+                    overrideNodeCreation = 1;
+                    dislikeRollingNumberNode = [[%c(ELMNodeFactory) sharedInstance] nodeWithElement:likeRollingNumberNode.element materializationContext:&elementContext];
+                    overrideNodeCreation = 0;
                     dislikeRollingNumberNode.updatedCount = FETCHING;
                     dislikeRollingNumberNode.updatedCountNumber = @(0);
                     [dislikeRollingNumberNode updateRollingNumberView];
@@ -297,16 +287,9 @@ static void getVoteAndModifyButtons(
                     dislikeTextNode = dislikeNode.yogaChildren[1];
                 else {
                     id elementContext = [likeTextNode valueForKey:@"_context"];
-                    if (ASNodeContextPush) {
-                        ASNodeContext *context = [(ASNodeContext *)[%c(ASNodeContext) alloc] initWithOptions:1];
-                        ASNodeContextPush(context);
-                        dislikeTextNode = [[%c(ELMTextNode) alloc] initWithElement:likeTextNode.element context:elementContext];
-                        ASNodeContextPop();
-                    } else {
-                        overrideNodeCreation = 2;
-                        dislikeTextNode = [[%c(ELMNodeFactory) sharedInstance] nodeWithElement:likeTextNode.element materializationContext:&elementContext];
-                        overrideNodeCreation = 0;
-                    }
+                    overrideNodeCreation = 2;
+                    dislikeTextNode = [[%c(ELMNodeFactory) sharedInstance] nodeWithElement:likeTextNode.element materializationContext:&elementContext];
+                    overrideNodeCreation = 0;
                     mutableDislikeText = [[NSMutableAttributedString alloc] initWithAttributedString:likeTextNode.attributedText];
                     dislikeTextNode.attributedText = mutableDislikeText;
                     [dislikeNode addYogaChild:dislikeTextNode];
@@ -369,7 +352,7 @@ static void getVoteAndModifyButtons(
 
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
     %orig;
-    if (isVideoScrollabelActionBar(self) && TweakEnabled()) {
+    if (isVideoScrollableActionBar(self) && TweakEnabled()) {
         if (dislikeRollingNumberNode) {
             YTRollingNumberView *likeView = [likeRollingNumberNode valueForKey:@"_rollingNumberView"];
             [dislikeRollingNumberNode updateCount:dislikeRollingNumberNode.updatedCount color:likeView.color];
@@ -398,7 +381,10 @@ static void getVoteAndModifyButtons(
         videoId = [(YTShortsPlayerViewController *)spvc videoId];
     else if ([spvc isKindOfClass:%c(YTReelPlayerViewController)]) {
         YTReelModel *model = [spvc valueForKey:@"_model"];
-        videoId = model.onesieVideoID;
+        if ([model respondsToSelector:@selector(onesieVideoID)])
+            videoId = model.onesieVideoID;
+        else
+            videoId = model.endpoint.reelWatchEndpoint.videoId;
     }
     HBLogDebug(@"RYD: Short ID: %@", videoId);
     if (videoId == nil) return;
@@ -477,7 +463,7 @@ static void getVoteAndModifyButtons(
         [self updateCount:self.updatedCount color:nil];
 }
 
-%new(v@:@)
+%new(v@:@@)
 - (void)updateCount:(NSString *)updatedCount_ color:(UIColor *)color_ {
     YTRollingNumberView *view = [self valueForKey:@"_rollingNumberView"];
     UIFont *font = view.font;
@@ -529,9 +515,5 @@ static void getVoteAndModifyButtons(
         bundlePath = [bundlePath stringByAppendingString:@"/Module_Framework"];
     } else
         bundlePath = NSBundle.mainBundle.executablePath;
-    MSImageRef ref = MSGetImageByName([bundlePath UTF8String]);
-    ASNodeContextPush = (void (*)(ASNodeContext *))MSFindSymbol(ref, "_ASNodeContextPush");
-    ASNodeContextPop = (void (*)(void))MSFindSymbol(ref, "_ASNodeContextPop");
-    HBLogDebug(@"RYD: ASNodeContextPush: %p, ASNodeContextPop: %p", ASNodeContextPush, ASNodeContextPop);
     %init;
 }
