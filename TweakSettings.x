@@ -1,8 +1,10 @@
+#import <Foundation/NSUserDefaults.h>
+#import <Foundation/NSValue.h>
 #import "TweakSettings.h"
 
 BOOL TweakEnabled() {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    id value = [defaults objectForKey:EnabledKey];
+    NSNumber *value = [defaults objectForKey:EnabledKey];
     return value ? [value boolValue] : YES;
 }
 
@@ -28,6 +30,10 @@ BOOL ExactDislikeNumber() {
 
 BOOL UseRawData() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:UseRawDataKey];
+}
+
+BOOL UseRYDLikeData() {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:UseRYDLikeDataKey];
 }
 
 void enableVoteSubmission(BOOL enabled) {

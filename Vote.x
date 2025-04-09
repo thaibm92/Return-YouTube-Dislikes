@@ -10,7 +10,13 @@ NSNumber *getLikeData(NSDictionary <NSString *, NSNumber *> *data) {
 }
 
 NSNumber *getDislikeData(NSDictionary <NSString *, NSNumber *> *data) {
-    return UseRawData() ? data[@"rawDislikes"] : data[@"dislikes"];
+    NSNumber *dislikes = data[@"dislikes"];
+    if (UseRawData()) {
+        NSNumber *rawDislikes = data[@"rawDislikes"];
+        if (rawDislikes != (id)[NSNull null])
+            return rawDislikes;
+    }
+    return dislikes;
 }
 
 NSString *formattedLongNumber(NSNumber *number, NSString *error) {
@@ -50,7 +56,7 @@ static NSString *formattedShortNumber(int64_t number) {
 
 NSString *getNormalizedNumber(NSNumber *number, BOOL exact, NSString *error) {
     if (!number) {
-        HBLogError(@"RYD: Number is nil, error: %@", error);
+        HBLogDebug(@"RYD: Number is nil, error: %@", error);
         return FAILED;
     }
     if (exact)

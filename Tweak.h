@@ -8,6 +8,10 @@
 #import <YouTubeHeader/ELMTextNode.h>
 #import <YouTubeHeader/UIView+AsyncDisplayKit.h>
 #import <YouTubeHeader/YTAlertView.h>
+#import <YouTubeHeader/YTAppDelegate.h>
+#import <YouTubeHeader/YTAppViewController.h>
+#import <YouTubeHeader/YTAsyncCollectionView.h>
+#import <YouTubeHeader/YTColorPalette.h>
 #import <YouTubeHeader/YTELMView.h>
 #import <YouTubeHeader/YTFullscreenEngagementActionBarButtonRenderer.h>
 #import <YouTubeHeader/YTFullscreenEngagementActionBarButtonView.h>
@@ -16,6 +20,7 @@
 #import <YouTubeHeader/YTILikeButtonRenderer.h>
 #import <YouTubeHeader/YTISlimMetadataButtonSupportedRenderers.h>
 #import <YouTubeHeader/YTIToggleButtonRenderer.h>
+#import <YouTubeHeader/YTPageStyleController.h>
 #import <YouTubeHeader/YTPlayerViewController.h>
 #import <YouTubeHeader/YTQTMButton.h>
 #import <YouTubeHeader/YTReelElementAsyncComponentView.h>

@@ -1,9 +1,10 @@
 #import <HBLog.h>
 #import <UIKit/UIKit.h>
-#import "Settings.h"
-#import "TweakSettings.h"
-#import "Tweak.h"
 #import "API.h"
+#import "Settings.h"
+#import "Shared.h"
+#import "Tweak.h"
+#import "TweakSettings.h"
 #import "Vote.h"
 
 static NSCache <NSString *, NSDictionary *> *cache;
@@ -22,14 +23,14 @@ extern NSBundle *RYDBundle();
     self = %orig;
     if (self && TweakEnabled()) {
         YTISlimMetadataButtonSupportedRenderers *renderer = [self valueForKey:@"_supportedRenderer"];
-        if ((ExactLikeNumber() && [renderer slimButton_isLikeButton]) || [renderer slimButton_isDislikeButton]) {
+        if (((ExactLikeNumber() || UseRYDLikeData()) && [renderer slimButton_isLikeButton]) || [renderer slimButton_isDislikeButton]) {
             YTISlimMetadataToggleButtonRenderer *meta = renderer.slimMetadataToggleButtonRenderer;
             getVoteFromVideoWithHandler(cache, meta.target.videoId, maxRetryCount, ^(NSDictionary *data, NSString *error) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if ([renderer slimButton_isDislikeButton])
                         [self.label setFormattedString:[%c(YTIFormattedString) formattedStringWithString:getNormalizedDislikes(getDislikeData(data), error)]];
                     else if ([renderer slimButton_isLikeButton] && error == nil)
-                        [self.label setFormattedString:[%c(YTIFormattedString) formattedStringWithString:formattedLongNumber(getLikeData(data), nil)]];
+                        [self.label setFormattedString:[%c(YTIFormattedString) formattedStringWithString:getNormalizedLikes(getLikeData(data), nil)]];
                     [self setNeedsLayout];
                 });
             });
@@ -44,7 +45,7 @@ extern NSBundle *RYDBundle();
         return;
     }
     YTISlimMetadataButtonSupportedRenderers *renderer = [self valueForKey:@"_supportedRenderer"];
-    BOOL isLikeButton = ExactLikeNumber() && [renderer slimButton_isLikeButton];
+    BOOL isLikeButton = (ExactLikeNumber() || UseRYDLikeData()) && [renderer slimButton_isLikeButton];
     BOOL isDislikeButton = [renderer slimButton_isDislikeButton];
     YTISlimMetadataToggleButtonRenderer *meta = renderer.slimMetadataToggleButtonRenderer;
     YTIToggleButtonRenderer *buttonRenderer = meta.button.toggleButtonRenderer;
@@ -58,8 +59,8 @@ extern NSBundle *RYDBundle();
     %orig;
     if (changed && (isLikeButton || isDislikeButton)) {
         getVoteFromVideoWithHandler(cache, meta.target.videoId, maxRetryCount, ^(NSDictionary *data, NSString *error) {
-            NSString *defaultText = isDislikeButton ? getNormalizedDislikes(getDislikeData(data), error) : formattedLongNumber(getLikeData(data), error);
-            NSString *toggledText = isDislikeButton ? getNormalizedDislikes(@([getDislikeData(data) unsignedIntegerValue] + 1), error) : formattedLongNumber(@([getLikeData(data) unsignedIntegerValue] + 1), error);
+            NSString *defaultText = isDislikeButton ? getNormalizedDislikes(getDislikeData(data), error) : getNormalizedLikes(getLikeData(data), error);
+            NSString *toggledText = isDislikeButton ? getNormalizedDislikes(@([getDislikeData(data) unsignedIntegerValue] + 1), error) : getNormalizedLikes(@([getLikeData(data) unsignedIntegerValue] + 1), error);
             YTIFormattedString *formattedDefaultText = [%c(YTIFormattedString) formattedStringWithString:defaultText];
             YTIFormattedString *formattedToggledText = [%c(YTIFormattedString) formattedStringWithString:toggledText];
             buttonRenderer.defaultText = formattedDefaultText;
@@ -82,7 +83,7 @@ extern NSBundle *RYDBundle();
         return;
     }
     YTFullscreenEngagementActionBarButtonRenderer *renderer = [self valueForKey:@"_buttonRenderer"];
-    BOOL isLikeButton = ExactLikeNumber() && [renderer isLikeButton];
+    BOOL isLikeButton = (ExactLikeNumber() || UseRYDLikeData()) && [renderer isLikeButton];
     BOOL isDislikeButton = [renderer isDislikeButton];
     YTISlimMetadataToggleButtonRenderer *meta = [renderer valueForKey:@"_toggleButtonRenderer"];
     YTIToggleButtonRenderer *buttonRenderer = meta.button.toggleButtonRenderer;
@@ -94,8 +95,8 @@ extern NSBundle *RYDBundle();
     %orig;
     if (isLikeButton || isDislikeButton) {
         getVoteFromVideoWithHandler(cache, meta.target.videoId, maxRetryCount, ^(NSDictionary *data, NSString *error) {
-            NSString *defaultText = isDislikeButton ? getNormalizedDislikes(getDislikeData(data), error) : formattedLongNumber(getLikeData(data), error);
-            NSString *toggledText = isDislikeButton ? getNormalizedDislikes(@([getDislikeData(data) unsignedIntegerValue] + 1), error) : formattedLongNumber(@([getLikeData(data) unsignedIntegerValue] + 1), error);
+            NSString *defaultText = isDislikeButton ? getNormalizedDislikes(getDislikeData(data), error) : getNormalizedLikes(getLikeData(data), error);
+            NSString *toggledText = isDislikeButton ? getNormalizedDislikes(@([getDislikeData(data) unsignedIntegerValue] + 1), error) : getNormalizedLikes(@([getLikeData(data) unsignedIntegerValue] + 1), error);
             YTIFormattedString *formattedDefaultText = [%c(YTIFormattedString) formattedStringWithString:defaultText];
             YTIFormattedString *formattedToggledText = [%c(YTIFormattedString) formattedStringWithString:toggledText];
             buttonRenderer.defaultText = formattedDefaultText;
@@ -139,9 +140,9 @@ extern NSBundle *RYDBundle();
                 [dislikeButton setTitle:[renderer.dislikeCountWithDislikeText stringWithFormattingRemoved] forState:UIControlStateSelected];
             }
         });
-        if (ExactLikeNumber() && error == nil) {
+        if ((ExactLikeNumber() || UseRYDLikeData()) && error == nil) {
             YTQTMButton *likeButton = self.likeButton;
-            NSString *formattedLikeCount = formattedLongNumber(getLikeData(data), nil);
+            NSString *formattedLikeCount = getNormalizedLikes(getLikeData(data), nil);
             NSString *formattedToggledLikeCount = getNormalizedDislikes(@([getLikeData(data) unsignedIntegerValue] + 1), nil);
             YTIFormattedString *formattedText = [%c(YTIFormattedString) formattedStringWithString:formattedLikeCount];
             YTIFormattedString *formattedToggledText = [%c(YTIFormattedString) formattedStringWithString:formattedToggledLikeCount];
@@ -232,9 +233,9 @@ static void getVoteAndModifyButtons(
     getVoteFromVideoWithHandler(cache, videoId, maxRetryCount, ^(NSDictionary *data, NSString *error) {
         HBLogDebug(@"RYD: Vote data for video %@: %@", videoId, data);
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (ExactLikeNumber() && error == nil) {
+            if ((ExactLikeNumber() || UseRYDLikeData()) && error == nil) {
                 NSNumber *likeNumber = getLikeData(data);
-                NSString *likeCount = formattedLongNumber(likeNumber, nil);
+                NSString *likeCount = getNormalizedLikes(likeNumber, nil);
                 if (likeCount && likeHandler) {
                     HBLogDebug(@"RYD: Set like count for %@ to %@", videoId, likeCount);
                     likeHandler(likeCount, likeNumber);
@@ -248,6 +249,25 @@ static void getVoteAndModifyButtons(
             }
         });
     });
+}
+
+static YTCommonColorPalette *currentColorPalette() {
+    Class YTPageStyleControllerClass = %c(YTPageStyleController);
+    if (YTPageStyleControllerClass)
+        return [YTPageStyleControllerClass currentColorPalette];
+    YTAppDelegate *delegate = (YTAppDelegate *)[UIApplication sharedApplication].delegate;
+    YTAppViewController *appViewController = [delegate valueForKey:@"_appViewController"];
+    NSInteger pageStyle = [appViewController pageStyle];
+    Class YTCommonColorPaletteClass = %c(YTCommonColorPalette);
+    if (YTCommonColorPaletteClass)
+        return pageStyle == 1 ? [YTCommonColorPaletteClass darkPalette] : [YTCommonColorPaletteClass lightPalette];
+    return [%c(YTColorPalette) colorPaletteForPageStyle:pageStyle];
+}
+
+static void setTextColor(NSMutableAttributedString *text) {
+    if (text == nil) return;
+    UIColor *color = [currentColorPalette() textPrimary];
+    [text addAttribute:NSForegroundColorAttributeName value:color range:NSMakeRange(0, text.length)];
 }
 
 %hook ASCollectionView
@@ -309,12 +329,15 @@ static void getVoteAndModifyButtons(
             }
         } else {
             dislikeTextNode = likeNode.yogaChildren[1];
-            if (![dislikeTextNode isKindOfClass:%c(ELMTextNode)]) return node;
+            if (![dislikeTextNode isKindOfClass:%c(ELMTextNode)]) {
+                HBLogDebug(@"RYD: Dislike button not found, instead found %@", dislikeTextNode);
+                return node;
+            }
             mutableDislikeText = [[NSMutableAttributedString alloc] initWithAttributedString:dislikeTextNode.attributedText];
             mutableDislikeText.mutableString.string = FETCHING;
             dislikeTextNode.attributedText = mutableDislikeText;
         }
-        BOOL shouldFetchVote = ExactLikeNumber() || !isDislikeButtonModified;
+        BOOL shouldFetchVote = (ExactLikeNumber() || UseRYDLikeData()) || !isDislikeButtonModified;
         if (shouldFetchVote) {
             getVoteAndModifyButtons(
                 videoId,
@@ -328,6 +351,7 @@ static void getVoteAndModifyButtons(
                     } else {
                         NSMutableAttributedString *mutableLikeText = [[NSMutableAttributedString alloc] initWithAttributedString:likeTextNode.attributedText];
                         mutableLikeText.mutableString.string = likeCount;
+                        setTextColor(mutableLikeText);
                         likeTextNode.attributedText = mutableLikeText;
                         likeTextNode.accessibilityLabel = likeCount;
                     }
@@ -350,6 +374,7 @@ static void getVoteAndModifyButtons(
                         [dislikeRollingNumberNode relayoutNode];
                     } else {
                         mutableDislikeText.mutableString.string = dislikeString;
+                        setTextColor(mutableDislikeText);
                         dislikeTextNode.attributedText = mutableDislikeText;
                         dislikeTextNode.accessibilityLabel = dislikeCount;
                     }
@@ -377,6 +402,27 @@ static void getVoteAndModifyButtons(
 
 %end
 
+static void setTextNodeColor(ELMTextNode *node, UIColor *color) {
+    if (node == nil) return;
+    NSString *text = node.attributedText.string;
+    NSAttributedString *attributedText = [[NSAttributedString alloc] initWithString:text attributes:@{ NSForegroundColorAttributeName: color }];
+    node.attributedText = attributedText;
+}
+
+%hook YTAsyncCollectionView
+
+- (void)pageStyleDidChange:(NSInteger)pageStyle {
+    %orig;
+    if ([self.pageStylingDelegate isKindOfClass:%c(YTWatchNextResultsViewController)]) {
+        YTCommonColorPalette *colorPalette = currentColorPalette();
+        UIColor *textColor = [colorPalette textPrimary];
+        setTextNodeColor(likeTextNode, textColor);
+        setTextNodeColor(dislikeTextNode, textColor);
+    }
+}
+
+%end
+
 %hook YTReelWatchPlaybackOverlayView
 
 %property (assign, nonatomic) BOOL didGetVote;
@@ -388,7 +434,7 @@ static void getVoteAndModifyButtons(
     id spvc = [self parentResponder];
     NSString *videoId = nil;
     if ([spvc isKindOfClass:%c(YTShortsPlayerViewController)])
-        videoId = [(YTShortsPlayerViewController *)spvc videoId];
+        videoId = [[[(YTShortsPlayerViewController *)spvc currentVideo] singleVideo] videoId];
     else if ([spvc isKindOfClass:%c(YTReelPlayerViewController)]) {
         YTReelModel *model = [spvc valueForKey:@"_model"];
         if ([model respondsToSelector:@selector(onesieVideoID)])
@@ -409,6 +455,8 @@ static void getVoteAndModifyButtons(
         } @catch (id ex) {}
     }
     if (elmView == nil) return;
+    if ([elmView isKindOfClass:%c(YTReelWatchActionBarView)])
+        elmView = [elmView valueForKey:@"_actionBarElement"];
     ELMContainerNode *containerNode = [elmView valueForKey:@"_rootNode"];
     ELMContainerNode *likeNode = [containerNode.yogaChildren firstObject];
     ELMContainerNode *dislikeNode = containerNode.yogaChildren[1];
@@ -518,12 +566,6 @@ static void getVoteAndModifyButtons(
             [alertView show];
         });
     }
-    NSString *bundlePath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework", NSBundle.mainBundle.bundlePath];
-    NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
-    if (bundle) {
-        [bundle load];
-        bundlePath = [bundlePath stringByAppendingString:@"/Module_Framework"];
-    } else
-        bundlePath = NSBundle.mainBundle.executablePath;
+    [[NSBundle bundleWithPath:[NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework", NSBundle.mainBundle.bundlePath]] load];
     %init;
 }

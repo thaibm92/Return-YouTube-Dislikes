@@ -2,6 +2,7 @@
 #import <YouTubeHeader/YTLikeStatus.h>
 #import <HBLog.h>
 #import "Settings.h"
+#import "Shared.h"
 
 static NSString *getUserID() {
     return [[NSUserDefaults standardUserDefaults] stringForKey:UserIDKey];
@@ -210,7 +211,7 @@ static void registerUser() {
                 @{ @"solution": solution },
                 ^(NSDictionary *data) {
                     if ([data isKindOfClass:[NSNumber class]] && ![(NSNumber *)data boolValue]) {
-                        HBLogInfo(@"%@", @"registerUser() failed");
+                        HBLogDebug(@"%@", @"registerUser() failed");
                         return;
                     }
                     if (!isRegistered()) {
@@ -305,7 +306,7 @@ void _sendVote(NSString *videoId, YTLikeStatus s, int retryCount) {
 }
 
 void sendVote(NSString *videoId, YTLikeStatus s) {
-    _sendVote(videoId, s, 3);
+    _sendVote(videoId, s, maxRetryCount);
 }
 
 %ctor {
