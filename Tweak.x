@@ -432,15 +432,14 @@ static void setTextNodeColor(ELMTextNode *node, UIColor *color) {
     if (!TweakEnabled()) return;
     if (self.didGetVote) return;
     id spvc = [self parentResponder];
-    NSString *videoId = nil;
-    if ([spvc isKindOfClass:%c(YTShortsPlayerViewController)])
-        videoId = [[[(YTShortsPlayerViewController *)spvc currentVideo] singleVideo] videoId];
-    else if ([spvc isKindOfClass:%c(YTReelPlayerViewController)]) {
-        YTReelModel *model = [spvc valueForKey:@"_model"];
-        if ([model respondsToSelector:@selector(onesieVideoID)])
-            videoId = model.onesieVideoID;
-        else
-            videoId = model.endpoint.reelWatchEndpoint.videoId;
+    YTReelModel *model = [spvc valueForKey:@"_model"];
+    NSString *videoId;
+    @try {
+        videoId = [model endpoint].reelWatchEndpoint.videoId;
+    } @catch (id ex) {
+        videoId = [model command].reelWatchEndpoint.videoId;
+        if (videoId.length == 0 && [spvc isKindOfClass:%c(YTShortsPlayerViewController)])
+            videoId = [[[(YTShortsPlayerViewController *)spvc currentVideo] singleVideo] videoId];
     }
     HBLogDebug(@"RYD: Short ID: %@", videoId);
     if (videoId == nil) return;
@@ -459,7 +458,7 @@ static void setTextNodeColor(ELMTextNode *node, UIColor *color) {
         elmView = [elmView valueForKey:@"_actionBarElement"];
     ELMContainerNode *containerNode = [elmView valueForKey:@"_rootNode"];
     ELMContainerNode *likeNode = [containerNode.yogaChildren firstObject];
-    ELMContainerNode *dislikeNode = containerNode.yogaChildren[1];
+    ELMContainerNode *dislikeNode = [containerNode.yogaChildren yt_objectAtIndexOrNil:1];
     do {
         likeNode = [likeNode.yogaChildren firstObject];
     } while ([likeNode.accessibilityIdentifier isEqualToString:@"id.reel_like_button"]);
@@ -472,9 +471,9 @@ static void setTextNodeColor(ELMTextNode *node, UIColor *color) {
     do {
         dislikeNode = [dislikeNode.yogaChildren firstObject];
     } while (dislikeNode.yogaChildren.count == 1);
-    ELMTextNode *shortLikeTextNode = likeNode.yogaChildren[1];
-    ELMTextNode *shortDislikeTextNode = dislikeNode.yogaChildren[1];
-    if (![shortLikeTextNode isKindOfClass:%c(ELMTextNode)] || ![shortDislikeTextNode isKindOfClass:%c(ELMTextNode)]) {
+    ELMTextNode *shortLikeTextNode = [likeNode.yogaChildren yt_objectAtIndexOrNil:1];
+    ELMTextNode *shortDislikeTextNode = [dislikeNode.yogaChildren yt_objectAtIndexOrNil:1];
+    if (shortLikeTextNode == nil || shortDislikeTextNode == nil || ![shortLikeTextNode isKindOfClass:%c(ELMTextNode)] || ![shortDislikeTextNode isKindOfClass:%c(ELMTextNode)]) {
         HBLogDebug(@"%@", @"RYD: Short like or dislike text node not found");
         return;
     }
